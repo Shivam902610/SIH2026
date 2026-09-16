@@ -15,6 +15,16 @@ from src.replay import (
     create_replay
 )
 
+from src.alert_manager import (
+    initialize_database,
+    create_subscription,
+    get_active_subscriptions
+)
+
+from src.alert_checker import check_station_alerts
+
+from src.alert_scheduler import start_alert_scheduler
+
 
 # ============================================================
 # ENVIRONMENT
@@ -114,6 +124,23 @@ app = FastAPI(
     ),
     version="2.1.0"
 )
+
+
+# ============================================================
+# START BACKGROUND SERVICES
+# ============================================================
+
+@app.on_event("startup")
+def start_background_services():
+
+    initialize_database()
+
+    start_alert_scheduler()
+
+    print(
+        "[ALERT SCHEDULER] "
+        "Background service connected to FastAPI."
+    )
 
 
 # ============================================================
@@ -1019,3 +1046,305 @@ def replay_train(
         )
 
     return replay
+
+
+# ============================================================
+# STATION ALERTS
+# ============================================================
+
+@app.post(
+    "/alerts/subscribe"
+)
+def subscribe_to_station_alert(
+    train_number: str,
+    journey_date: str,
+    station_code: str,
+    station_name: str,
+    phone_number: str,
+    alert_type: str = "boarding",
+    alert_before_minutes: int = 15
+):
+    """
+    Create a passenger station-alert subscription.
+    """
+
+    # --------------------------------------------------------
+    # VALIDATE TRAIN NUMBER
+    # --------------------------------------------------------
+
+    train_number = validate_train_number(
+        train_number
+    )
+
+    # --------------------------------------------------------
+    # VALIDATE JOURNEY DATE
+    # --------------------------------------------------------
+
+    try:
+
+        datetime.strptime(
+            journey_date,
+            "%Y-%m-%d"
+        )
+
+    except ValueError:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Journey date must be YYYY-MM-DD"
+        )
+
+    # --------------------------------------------------------
+    # VALIDATE ALERT TYPE
+    # --------------------------------------------------------
+
+    if alert_type not in [
+        "boarding",
+        "drop",
+        "both"
+    ]:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "alert_type must be "
+                "'boarding', 'drop', or 'both'"
+            )
+        )
+
+    # --------------------------------------------------------
+    # VALIDATE ALERT TIME
+    # --------------------------------------------------------
+
+    if (
+        alert_before_minutes < 1
+        or
+        alert_before_minutes > 120
+    ):
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "alert_before_minutes must "
+                "be between 1 and 120"
+            )
+        )
+
+    # --------------------------------------------------------
+    # CREATE SUBSCRIPTION
+    # --------------------------------------------------------
+
+    try:
+
+        result = create_subscription(
+
+            train_number=train_number,
+
+            journey_date=journey_date,
+
+            station_code=station_code,
+
+            station_name=station_name,
+
+            phone_number=phone_number,
+
+            alert_type=alert_type,
+
+            alert_before_minutes=
+                alert_before_minutes
+        )
+
+        return result
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to create alert "
+                f"subscription: {str(e)}"
+            )
+        )
+
+
+# ============================================================
+# GET ACTIVE TRAIN ALERTS
+# ============================================================
+
+@app.get(
+    "/alerts/{train_number}/{journey_date}"
+)
+def get_train_alerts(
+    train_number: str,
+    journey_date: str
+):
+    """
+    Get active station-alert subscriptions.
+    """
+
+    train_number = validate_train_number(
+        train_number
+    )
+
+    # --------------------------------------------------------
+    # VALIDATE JOURNEY DATE
+    # --------------------------------------------------------
+
+    try:
+
+        datetime.strptime(
+            journey_date,
+            "%Y-%m-%d"
+        )
+
+    except ValueError:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Journey date must be YYYY-MM-DD"
+        )
+
+    # --------------------------------------------------------
+    # GET SUBSCRIPTIONS
+    # --------------------------------------------------------
+
+    try:
+
+        initialize_database()
+
+        subscriptions = get_active_subscriptions(
+
+            train_number=train_number,
+
+            journey_date=journey_date
+        )
+
+        return {
+
+            "success": True,
+
+            "train_number":
+                train_number,
+
+            "journey_date":
+                journey_date,
+
+            "active_subscriptions":
+                subscriptions,
+
+            "total":
+                len(subscriptions)
+        }
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to load alerts: "
+                f"{str(e)}"
+            )
+        )
+
+
+# ============================================================
+# MANUAL CHECK STATION ALERTS
+# ============================================================
+
+@app.post(
+    "/alerts/check/{train_number}"
+)
+def check_train_alerts(
+    train_number: str
+):
+    """
+    Check active passenger station alerts
+    using the current live train prediction.
+    """
+
+    # --------------------------------------------------------
+    # VALIDATE TRAIN NUMBER
+    # --------------------------------------------------------
+
+    train_number = validate_train_number(
+        train_number
+    )
+
+    try:
+
+        # ----------------------------------------------------
+        # GET CURRENT ML PREDICTION
+        # ----------------------------------------------------
+
+        prediction = predict_eta(
+            train_number
+        )
+
+        # ----------------------------------------------------
+        # BUILD TRAIN STATE
+        # ----------------------------------------------------
+
+        state = {
+
+            "next_station":
+                prediction[
+                    "next_station"
+                ],
+
+            "next_station_name":
+                prediction[
+                    "next_station_name"
+                ]
+        }
+
+        # ----------------------------------------------------
+        # CHECK ALERTS
+        # ----------------------------------------------------
+
+        result = check_station_alerts(
+
+            train_number=train_number,
+
+            journey_date=prediction[
+                "journey_date"
+            ],
+
+            state=state,
+
+            expected_arrival=
+                prediction[
+                    "expected_arrival"
+                ]
+        )
+
+        # ----------------------------------------------------
+        # RETURN RESULT
+        # ----------------------------------------------------
+
+        return {
+
+            "success": True,
+
+            "train_number":
+                train_number,
+
+            "prediction":
+                prediction,
+
+            "alert_check":
+                result
+        }
+
+    except HTTPException:
+
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Unable to check station alerts: "
+                f"{str(e)}"
+            )
+        )

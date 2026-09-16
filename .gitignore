@@ -50,3 +50,5 @@ Dynamic-ETA/data/live_response.json
 *api_key*
 *API_KEY*
 *secret*
+# Alert database - contains passenger contact data
+Dynamic-ETA/data/alerts.db
