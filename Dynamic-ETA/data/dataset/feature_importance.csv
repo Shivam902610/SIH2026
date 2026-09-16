@@ -1,0 +1,16 @@
+feature,importance
+current_departure_delay,0.983483363767814
+scheduled_travel_time,0.004079375399669976
+next_station,0.002209888626132818
+previous_departure_delay,0.0019106574489218904
+current_station,0.0015410756587153278
+historical_train_delay,0.0013506801645479171
+historical_station_delay,0.0013220919997445602
+delay_change,0.0008575096015103218
+scheduled_departure_hour,0.0008315416437092324
+route_progress,0.0006173295511925995
+day_of_week,0.0005974768325007095
+stations_remaining,0.0005972733831307653
+station_sequence,0.0005307997562071582
+next_station_sequence,0.0005298216086568491
+train_number,7.09361662027751e-05
