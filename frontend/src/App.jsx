@@ -255,14 +255,17 @@ function App() {
   // LOAD REPLAY
   // ============================================================
 
-  async function loadReplay() {
+  async function loadReplay(
+    train = replayTrain,
+    date = replayDate
+  ) {
 
     setReplayError("");
     setReplayData(null);
     setCurrentStep(0);
     setIsPlaying(false);
 
-    if (!/^\d{5}$/.test(replayTrain)) {
+    if (!/^\d{5}$/.test(train)) {
 
       setReplayError(
         "Please select a valid 5-digit train number."
@@ -271,7 +274,7 @@ function App() {
       return;
     }
 
-    if (!replayDate) {
+    if (!date) {
 
       setReplayError(
         "Please select a journey date."
@@ -286,7 +289,7 @@ function App() {
 
       const response =
         await fetch(
-          `${API_BASE_URL}/replay/${replayTrain}/${replayDate}`
+          `${API_BASE_URL}/replay/${train}/${date}`
         );
 
       const data =
@@ -777,8 +780,8 @@ function App() {
     setReplayError("");
 
     loadReplay(
-      dateKey,
-      replayTrain
+      replayTrain,
+      dateKey
     );
 
   }
@@ -1861,39 +1864,819 @@ function App() {
               </div>
 
 
-              {/* INFORMATION */}
+            </section>
 
-              <div
-                className="info-card"
-                id="analytics"
-              >
+          )}
 
-                <div className="info-icon">
-                  💡
+
+
+          {/* ==================================================
+              ANALYTICS DASHBOARD
+          ================================================== */}
+
+          <section
+            className="analytics-section"
+            id="analytics"
+          >
+
+            <div className="replay-section-header">
+
+              <div>
+
+                <div className="eyebrow">
+                  DATA & MODEL INSIGHTS
+                </div>
+
+                <h2>
+                  Analytics Dashboard
+                </h2>
+
+                <p>
+                  Explore the historical data, delay patterns,
+                  and machine learning evaluation behind TrainETA.
+                </p>
+
+              </div>
+
+              <div className="historical-badge">
+                📊 Dataset Insights
+              </div>
+
+            </div>
+
+
+            {/* DATASET OVERVIEW */}
+
+            <div className="stats-grid">
+
+              <div className="stat-card">
+
+                <div className="stat-icon blue">
+                  🗂️
                 </div>
 
                 <div>
 
+                  <span>
+                    Historical Records
+                  </span>
+
+                  <strong>
+                    9,343
+                  </strong>
+
+                  <small>
+                    station-level records
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div className="stat-card">
+
+                <div className="stat-icon green">
+                  🚆
+                </div>
+
+                <div>
+
+                  <span>
+                    Historical Journeys
+                  </span>
+
+                  <strong>
+                    86
+                  </strong>
+
+                  <small>
+                    recorded journeys
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div className="stat-card">
+
+                <div className="stat-icon purple">
+                  🚉
+                </div>
+
+                <div>
+
+                  <span>
+                    Trains Covered
+                  </span>
+
+                  <strong>
+                    5
+                  </strong>
+
+                  <small>
+                    supported train numbers
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div className="stat-card">
+
+                <div className="stat-icon orange">
+                  🤖
+                </div>
+
+                <div>
+
+                  <span>
+                    ML Samples
+                  </span>
+
+                  <strong>
+                    1,325
+                  </strong>
+
+                  <small>
+                    usable station-to-station samples
+                  </small>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* DELAY SUMMARY */}
+
+            <div className="two-column">
+
+              <div className="dashboard-card">
+
+                <div className="card-heading">
+
+                  <div>
+
+                    <h3>
+                      Delay Summary
+                    </h3>
+
+                    <p>
+                      Observed arrival-delay statistics after
+                      removing suspicious timestamp anomalies
+                      from EDA calculations.
+                    </p>
+
+                  </div>
+
+                  <span className="historical-count">
+                    EDA Snapshot
+                  </span>
+
+                </div>
+
+
+                <div
+                  className="delay-summary-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(4, minmax(0, 1fr))",
+                    gap: "14px",
+                    marginTop: "20px"
+                  }}
+                >
+
+                  <div className="delay-summary-metric">
+
+                    <span>
+                      Average Delay
+                    </span>
+
+                    <strong>
+                      62.6 min
+                    </strong>
+
+                    <small>
+                      Across valid EDA observations
+                    </small>
+
+                  </div>
+
+
+                  <div className="delay-summary-metric">
+
+                    <span>
+                      Median Delay
+                    </span>
+
+                    <strong>
+                      18 min
+                    </strong>
+
+                    <small>
+                      Typical observed delay
+                    </small>
+
+                  </div>
+
+
+                  <div className="delay-summary-metric">
+
+                    <span>
+                      Maximum Observed
+                    </span>
+
+                    <strong>
+                      407 min
+                    </strong>
+
+                    <small>
+                      Within the EDA-valid range
+                    </small>
+
+                  </div>
+
+
+                  <div className="delay-summary-metric">
+
+                    <span>
+                      Delay Correlation
+                    </span>
+
+                    <strong>
+                      0.987
+                    </strong>
+
+                    <small>
+                      Current departure → next arrival
+                    </small>
+
+                  </div>
+
+                </div>
+
+
+                <div
+                  className="info-card"
+                  style={{
+                    marginTop: "18px"
+                  }}
+                >
+
+                  <div className="info-icon">
+                    📌
+                  </div>
+
+                  <div>
+
+                    <h3>
+                      What this tells us
+                    </h3>
+
+                    <p>
+                      Delay propagation is strong in the current
+                      historical data: the train's existing delay
+                      provides an important signal for estimating
+                      the next station's arrival delay.
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              {/* MODEL CARD */}
+
+              <div className="dashboard-card">
+
+                <div className="card-heading">
+
+                  <div>
+
+                    <h3>
+                      Model Evaluation
+                    </h3>
+
+                    <p>
+                      Leave-one-journey-out evaluation used
+                      to test generalization across journeys.
+                    </p>
+
+                  </div>
+
+                  <span className="ai-badge">
+                    ✦ ML
+                  </span>
+
+                </div>
+
+
+                <div className="detail-list">
+
+                  <div className="detail-row">
+
+                    <span>
+                      Production Model
+                    </span>
+
+                    <strong>
+                      Random Forest
+                    </strong>
+
+                  </div>
+
+
+                  <div className="detail-row">
+
+                    <span>
+                      Target
+                    </span>
+
+                    <strong>
+                      Delay Change
+                    </strong>
+
+                  </div>
+
+
+                  <div className="detail-row">
+
+                    <span>
+                      MAE
+                    </span>
+
+                    <strong>
+                      5.67 min
+                    </strong>
+
+                  </div>
+
+
+                  <div className="detail-row">
+
+                    <span>
+                      RMSE
+                    </span>
+
+                    <strong>
+                      9.86 min
+                    </strong>
+
+                  </div>
+
+
+                  <div className="detail-row">
+
+                    <span>
+                      R²
+                    </span>
+
+                    <strong>
+                      0.492
+                    </strong>
+
+                  </div>
+
+                </div>
+
+
+                <div className="confidence-box">
+
+                  <div className="confidence-icon">
+                    💡
+                  </div>
+
+                  <div>
+
+                    <strong>
+                      How to read this
+                    </strong>
+
+                    <span>
+                      MAE measures the average prediction
+                      error in minutes. R² is lower here because
+                      the model predicts the change in delay,
+                      which has relatively low variance.
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* TRAIN-WISE DELAY */}
+
+            <div className="dashboard-card">
+
+              <div className="card-heading">
+
+                <div>
+
                   <h3>
-                    How the prediction works
+                    Average Arrival Delay by Train
                   </h3>
 
                   <p>
-                    Our machine learning model considers
-                    the train's current delay, previous
-                    delay, station position, scheduled
-                    travel time and route information
-                    to estimate how the delay will change
-                    before the next station.
+                    Average valid arrival delay observed
+                    in the current historical dataset.
                   </p>
 
                 </div>
 
               </div>
 
-            </section>
 
-          )}
+              <div
+                style={{
+                  display: "grid",
+                  gap: "14px",
+                  marginTop: "8px"
+                }}
+              >
+
+                {[
+                  {
+                    train: "12919",
+                    name: "Malwa SF Express",
+                    delay: 123.95,
+                    journeys: 18
+                  },
+                  {
+                    train: "12920",
+                    name: "Malwa SF Express",
+                    delay: 28.00,
+                    journeys: 21
+                  },
+                  {
+                    train: "12002",
+                    name: "Shatabdi Express",
+                    delay: 14.90,
+                    journeys: 11
+                  },
+                  {
+                    train: "12952",
+                    name: "Mumbai Central Rajdhani",
+                    delay: 9.42,
+                    journeys: 15
+                  },
+                  {
+                    train: "12951",
+                    name: "Mumbai Central Rajdhani",
+                    delay: 8.61,
+                    journeys: 21
+                  }
+                ].map((item) => {
+
+                  const barWidth =
+                    Math.max(
+                      4,
+                      (item.delay / 123.95) * 100
+                    );
+
+                  return (
+
+                    <div
+                      key={item.train}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "155px 1fr 105px",
+                        alignItems: "center",
+                        gap: "16px"
+                      }}
+                    >
+
+                      <div>
+
+                        <strong
+                          style={{
+                            display: "block",
+                            color: "#17345f"
+                          }}
+                        >
+                          {item.train}
+                        </strong>
+
+                        <small
+                          style={{
+                            color: "#8997aa"
+                          }}
+                        >
+                          {item.journeys} journeys
+                        </small>
+
+                      </div>
+
+
+                      <div
+                        style={{
+                          height: "10px",
+                          borderRadius: "999px",
+                          background: "#edf2f8",
+                          overflow: "hidden"
+                        }}
+                      >
+
+                        <div
+                          style={{
+                            width: `${barWidth}%`,
+                            height: "100%",
+                            borderRadius: "999px",
+                            background:
+                              "linear-gradient(90deg,#1768dc,#5aa4ff)",
+                            transition:
+                              "width 0.5s ease"
+                          }}
+                        />
+
+                      </div>
+
+
+                      <strong
+                        style={{
+                          textAlign: "right",
+                          color: "#17345f"
+                        }}
+                      >
+                        {item.delay.toFixed(1)} min
+                      </strong>
+
+                    </div>
+
+                  );
+
+                })}
+
+              </div>
+
+            </div>
+
+
+            {/* MODEL VS BASELINE */}
+
+            <div className="dashboard-card">
+
+              <div className="card-heading">
+
+                <div>
+
+                  <h3>
+                    Prediction Error Comparison
+                  </h3>
+
+                  <p>
+                    Lower MAE means a smaller average prediction
+                    error in minutes.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div className="stats-grid">
+
+                <div className="stat-card">
+
+                  <div className="stat-icon blue">
+                    🤖
+                  </div>
+
+                  <div>
+
+                    <span>
+                      Random Forest
+                    </span>
+
+                    <strong>
+                      5.67 min
+                    </strong>
+
+                    <small>
+                      dynamic delay-change MAE
+                    </small>
+
+                  </div>
+
+                </div>
+
+
+                <div className="stat-card">
+
+                  <div className="stat-icon purple">
+                    📐
+                  </div>
+
+                  <div>
+
+                    <span>
+                      Linear Regression
+                    </span>
+
+                    <strong>
+                      5.92 min
+                    </strong>
+
+                    <small>
+                      dynamic delay-change MAE
+                    </small>
+
+                  </div>
+
+                </div>
+
+
+                <div className="stat-card">
+
+                  <div className="stat-icon orange">
+                    📍
+                  </div>
+
+                  <div>
+
+                    <span>
+                      Naive Propagation
+                    </span>
+
+                    <strong>
+                      9.31 min
+                    </strong>
+
+                    <small>
+                      baseline MAE
+                    </small>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <div className="info-card">
+
+                <div className="info-icon">
+                  🔄
+                </div>
+
+                <div>
+
+                  <h3>
+                    Why dynamic prediction matters
+                  </h3>
+
+                  <p>
+                    Instead of simply copying the current delay
+                    into the next station, TrainETA predicts how
+                    that delay is expected to change. The predicted
+                    change is then added to the current observed delay
+                    to produce the next-station delay and expected ETA.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* DATA COVERAGE */}
+
+            <div className="dashboard-card">
+
+              <div className="card-heading">
+
+                <div>
+
+                  <h3>
+                    Historical Data Coverage
+                  </h3>
+
+                  <p>
+                    Current prototype dataset coverage used
+                    for replay and model development.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div className="detail-list">
+
+                <div className="detail-row">
+
+                  <span>
+                    Dataset period
+                  </span>
+
+                  <strong>
+                    10 Aug – 12 Sep 2026
+                  </strong>
+
+                </div>
+
+
+                <div className="detail-row">
+
+                  <span>
+                    Usable ML journeys
+                  </span>
+
+                  <strong>
+                    66
+                  </strong>
+
+                </div>
+
+
+                <div className="detail-row">
+
+                  <span>
+                    ML dataset rows
+                  </span>
+
+                  <strong>
+                    1,325
+                  </strong>
+
+                </div>
+
+
+                <div className="detail-row">
+
+                  <span>
+                    Historical replay journeys
+                  </span>
+
+                  <strong>
+                    86
+                  </strong>
+
+                </div>
+
+              </div>
+
+
+              <div className="calendar-note">
+
+                <span>
+                  💡
+                </span>
+
+                <p>
+                  These figures describe the current prototype
+                  dataset, not all Indian Railway journeys.
+                </p>
+
+              </div>
+
+            </div>
+
+          </section>
+
+
+          {/* ==================================================
+              ABOUT / HOW IT WORKS
+          ================================================== */}
+
+          <div
+            className="info-card"
+            id="about"
+          >
+
+            <div className="info-icon">
+              💡
+            </div>
+
+            <div>
+
+              <h3>
+                How the prediction works
+              </h3>
+
+              <p>
+                Our machine learning model considers the train's
+                current delay, previous delay, station position,
+                scheduled travel time and route information to
+                estimate how the delay will change before the
+                next station.
+              </p>
+
+            </div>
+
+          </div>
 
 
           {/* ==================================================
@@ -1902,7 +2685,7 @@ function App() {
 
           <section
             className="replay-section"
-            id="about"
+            id="historical-replay"
           >
 
             <div className="replay-section-header">
