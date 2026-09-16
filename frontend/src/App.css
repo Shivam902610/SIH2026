@@ -3182,3 +3182,275 @@ footer {
     padding: 18px 16px;
   }
 }
+
+
+/* ============================================================
+   STATION ALERTS — FINAL UI POLISH
+   Added for the SMS passenger notification feature.
+============================================================ */
+
+.station-alert-card {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 26px;
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #fbfdff 68%,
+      #f3f8ff 100%
+    );
+}
+
+.station-alert-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(
+    180deg,
+    #1768dc,
+    #55a1ff
+  );
+}
+
+.station-alert-card .card-heading {
+  align-items: center;
+  gap: 20px;
+}
+
+.station-alert-card .card-heading h3 {
+  margin-top: 4px;
+  font-size: 18px;
+  color: #17345f;
+}
+
+.station-alert-card .card-heading p {
+  margin-top: 6px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.station-alert-card .ai-badge {
+  flex-shrink: 0;
+  padding: 8px 11px;
+  border: 1px solid #dce9fa;
+  border-radius: 8px;
+  background: #edf5ff;
+  color: #2169c9;
+  font-size: 9px;
+  letter-spacing: 0.3px;
+}
+
+/* Next station preview */
+.alert-station-preview {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 22px 0 20px;
+  padding: 16px 18px;
+  border: 1px solid #dfe8f3;
+  border-radius: 12px;
+  background: #f7faff;
+}
+
+.alert-station-icon {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 12px;
+  background: #eaf3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.alert-station-preview > div:last-child {
+  min-width: 0;
+}
+
+.alert-station-preview > div:last-child > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #8795a8;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+}
+
+.alert-station-preview > div:last-child > strong {
+  display: inline-block;
+  margin-right: 8px;
+  color: #173c70;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.alert-station-preview > div:last-child > small {
+  display: inline-block;
+  color: #718198;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Alert form */
+.alert-form-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 13px;
+  margin-top: 4px;
+}
+
+.alert-form-grid .selector-field {
+  min-width: 0;
+}
+
+.alert-form-grid .selector-field label {
+  margin-bottom: 7px;
+  color: #65758b;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.alert-form-grid input,
+.alert-form-grid select {
+  width: 100%;
+  height: 43px;
+  padding: 0 12px;
+  border: 1px solid #dce4ee;
+  border-radius: 9px;
+  background: white;
+  color: #33445d;
+  font-size: 11px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.alert-form-grid input::placeholder {
+  color: #a1adbc;
+}
+
+.alert-form-grid input:hover,
+.alert-form-grid select:hover {
+  border-color: #c6d4e4;
+}
+
+.alert-form-grid input:focus,
+.alert-form-grid select:focus {
+  border-color: #8db7ec;
+  box-shadow: 0 0 0 3px rgba(23,104,220,0.08);
+  background: #fcfdff;
+}
+
+/* Button */
+.alert-submit-button {
+  display: block;
+  min-width: 210px;
+  margin: 18px auto 0;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 9px;
+  box-shadow: 0 6px 15px rgba(23,104,220,0.14);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.alert-submit-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 19px rgba(23,104,220,0.20);
+}
+
+.alert-submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Success state */
+.alert-success-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #c8ead6;
+  border-radius: 9px;
+  background: #f0fbf4;
+  color: #177748;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+/* The existing calendar-note is also used by the alert card.
+   Keep it compact and readable here. */
+.station-alert-card .calendar-note {
+  margin-top: 15px;
+  padding: 11px 13px;
+}
+
+.station-alert-card .calendar-note > span {
+  font-size: 15px;
+}
+
+.station-alert-card .calendar-note p {
+  font-size: 8px;
+}
+
+/* Responsive alert layout */
+@media (max-width: 900px) {
+  .alert-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .alert-form-grid .selector-field:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .station-alert-card {
+    padding: 20px 16px;
+  }
+
+  .station-alert-card .card-heading {
+    align-items: flex-start;
+  }
+
+  .station-alert-card .ai-badge {
+    font-size: 8px;
+    padding: 7px 9px;
+  }
+
+  .alert-station-preview {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .alert-station-preview > div:last-child > strong,
+  .alert-station-preview > div:last-child > small {
+    display: block;
+  }
+
+  .alert-station-preview > div:last-child > strong {
+    margin-right: 0;
+    margin-bottom: 3px;
+  }
+
+  .alert-form-grid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .alert-form-grid .selector-field:first-child {
+    grid-column: auto;
+  }
+
+  .alert-submit-button {
+    width: 100%;
+  }
+}

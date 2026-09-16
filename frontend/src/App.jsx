@@ -38,6 +38,41 @@ function App() {
 
 
   // ============================================================
+  // STATION ALERTS
+  // ============================================================
+
+  const [
+    alertPhone,
+    setAlertPhone
+  ] = useState("");
+
+  const [
+    alertType,
+    setAlertType
+  ] = useState("boarding");
+
+  const [
+    alertBeforeMinutes,
+    setAlertBeforeMinutes
+  ] = useState(15);
+
+  const [
+    alertLoading,
+    setAlertLoading
+  ] = useState(false);
+
+  const [
+    alertMessage,
+    setAlertMessage
+  ] = useState("");
+
+  const [
+    alertError,
+    setAlertError
+  ] = useState("");
+
+
+  // ============================================================
   // REPLAY
   // ============================================================
 
@@ -183,6 +218,95 @@ function App() {
       setReplayError(
         "Unable to load historical journey list."
       );
+
+    }
+
+  }
+
+
+  // ============================================================
+  // STATION ALERT SUBSCRIPTION
+  // ============================================================
+
+  async function subscribeToStationAlert() {
+
+    setAlertMessage("");
+    setAlertError("");
+
+    if (!etaData) {
+      setAlertError(
+        "Search for a train first so we can use its current journey."
+      );
+      return;
+    }
+
+    const phone = alertPhone.trim();
+
+    const normalizedPhone = phone.replace(/\\s+/g, "");
+
+    if (!/^\+[0-9]{10,15}$/.test(normalizedPhone)) {
+      setAlertError(
+        "Please enter a valid phone number with country code."
+      );
+      return;
+    }
+
+    setAlertLoading(true);
+
+    try {
+
+      const params = new URLSearchParams({
+        train_number: etaData.train_number,
+        journey_date: etaData.journey_date,
+        station_code: etaData.next_station,
+        station_name: etaData.next_station_name,
+        phone_number: normalizedPhone,
+        alert_type: alertType,
+        alert_before_minutes: String(alertBeforeMinutes)
+      });
+
+      const response = await fetch(
+        `${API_BASE_URL}/alerts/subscribe?${params.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.detail ||
+          "Unable to create station alert."
+        );
+      }
+
+      if (!data.success) {
+        throw new Error(
+          data.message ||
+          "This alert subscription could not be created."
+        );
+      }
+
+      setAlertMessage(
+        `Alert set for ${etaData.next_station_name} (${etaData.next_station}). You will receive an SMS when the train enters your selected alert window.`
+      );
+
+    } catch (err) {
+
+      console.error(err);
+
+      setAlertError(
+        err.message ||
+        "Failed to create station alert."
+      );
+
+    } finally {
+
+      setAlertLoading(false);
 
     }
 
@@ -927,6 +1051,14 @@ function App() {
           >
             <span>▥</span>
             Analytics
+          </a>
+
+          <a
+            href="#alerts"
+            className="nav-item"
+          >
+            <span>🔔</span>
+            Station Alerts
           </a>
 
           <a
@@ -1868,6 +2000,209 @@ function App() {
 
           )}
 
+
+
+          {/* ==================================================
+              STATION ALERTS
+          ================================================== */}
+
+          {etaData && (
+
+            <section
+              className="dashboard-card station-alert-card"
+              id="alerts"
+            >
+
+              <div className="card-heading">
+
+                <div>
+
+                  <div className="eyebrow">
+                    PASSENGER NOTIFICATIONS
+                  </div>
+
+                  <h3>
+                    Station Alert
+                  </h3>
+
+                  <p>
+                    Get an SMS when your train is approaching
+                    the next station.
+                  </p>
+
+                </div>
+
+                <span className="ai-badge">
+                  📱 SMS ALERT
+                </span>
+
+              </div>
+
+
+              <div className="alert-station-preview">
+
+                <div className="alert-station-icon">
+                  📍
+                </div>
+
+                <div>
+
+                  <span>
+                    NEXT STATION
+                  </span>
+
+                  <strong>
+                    {etaData.next_station}
+                  </strong>
+
+                  <small>
+                    {etaData.next_station_name}
+                    {" • "}
+                    ETA {formatTime(etaData.expected_arrival)}
+                  </small>
+
+                </div>
+
+              </div>
+
+
+              <div className="alert-form-grid">
+
+                <div className="selector-field">
+
+                  <label>
+                    Phone Number
+                  </label>
+
+                  <input
+                    type="tel"
+                    value={alertPhone}
+                    onChange={(event) =>
+                      setAlertPhone(event.target.value)
+                    }
+                    placeholder="+91XXXXXXXXXX"
+                  />
+
+                </div>
+
+
+                <div className="selector-field">
+
+                  <label>
+                    Alert Type
+                  </label>
+
+                  <select
+                    value={alertType}
+                    onChange={(event) =>
+                      setAlertType(event.target.value)
+                    }
+                  >
+
+                    <option value="boarding">
+                      Boarding
+                    </option>
+
+                    <option value="drop">
+                      Drop
+                    </option>
+
+                    <option value="both">
+                      Boarding / Drop
+                    </option>
+
+                  </select>
+
+                </div>
+
+
+                <div className="selector-field">
+
+                  <label>
+                    Alert Before
+                  </label>
+
+                  <select
+                    value={alertBeforeMinutes}
+                    onChange={(event) =>
+                      setAlertBeforeMinutes(
+                        Number(event.target.value)
+                      )
+                    }
+                  >
+
+                    <option value={15}>
+                      15 minutes
+                    </option>
+
+                    <option value={30}>
+                      30 minutes
+                    </option>
+
+                    <option value={60}>
+                      1 hour
+                    </option>
+
+                    <option value={120}>
+                      2 hours
+                    </option>
+
+                  </select>
+
+                </div>
+
+              </div>
+
+
+              <button
+                className="search-button alert-submit-button"
+                onClick={subscribeToStationAlert}
+                disabled={alertLoading}
+              >
+
+                {alertLoading
+                  ? "Setting Alert..."
+                  : "🔔 Set Station Alert"}
+
+              </button>
+
+
+              {alertMessage && (
+
+                <div className="alert-success-box">
+                  ✅ {alertMessage}
+                </div>
+
+              )}
+
+
+              {alertError && (
+
+                <div className="error-box">
+                  ⚠️ {alertError}
+                </div>
+
+              )}
+
+
+              <div className="calendar-note">
+
+                <span>
+                  💡
+                </span>
+
+                <p>
+                  TrainETA uses the live train position and
+                  ML-predicted ETA to decide when the alert
+                  should be triggered. The current prototype
+                  sends SMS notifications through Twilio.
+                </p>
+
+              </div>
+
+            </section>
+
+          )}
 
 
           {/* ==================================================
